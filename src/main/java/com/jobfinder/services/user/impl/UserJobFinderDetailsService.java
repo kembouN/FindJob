@@ -2,14 +2,14 @@ package com.jobfinder.services.user.impl;
 
 import com.jobfinder.entities.user.UserJobFinder;
 import com.jobfinder.repositories.user.UserJobFinderRepository;
+import com.jobfinder.services.user.IUserJobFinderDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserJobFinderDetailsService implements UserDetailsService {
+public class UserJobFinderDetailsService implements IUserJobFinderDetailsService {
 
     private UserJobFinderRepository userJobFinderRepository;
 
