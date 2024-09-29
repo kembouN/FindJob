@@ -1,7 +1,9 @@
 package com.jobfinder.config;
 
-import com.jobfinder.services.user.impl.UserJobFinderDetailsService;
+import com.jobfinder.entities.user.UserJobFinder;
+import com.jobfinder.repositories.user.UserJobFinderRepository;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,10 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -35,11 +41,16 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/swagger-resources"
+            "/swagger-resources",
+            "/finder",
+            "/user/**"
     };
 
     @Value("${app.jwt.secret}")
     private String jwtKey;
+
+    @Autowired
+    private UserJobFinderRepository userJobFinderRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,15 +58,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsFilter()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(
-                        "/user/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/swagger-resources"
-
+                .authorizeHttpRequests(auth ->
+                {
+                    try
+                    {
+                        auth.requestMatchers(
+                                SWAGGER_WHITELIST
                         ).permitAll()
-                        .anyRequest().authenticated())
+                                .anyRequest().authenticated();
+                    } catch (Exception e){
+                        e.printStackTrace();
+                }
+
+        })
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
     }
@@ -92,11 +107,26 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(UserJobFinderDetailsService userJobFinderDetailsService) {
+    public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userJobFinderDetailsService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder());
+        provider.setUserDetailsService(userDetailsService());
+        provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(){
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                 UserJobFinder user = userJobFinderRepository.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("Utilisateur introuvable"));
+                UserDetails userDetails = User.withUsername(user.getUsername())
+                        .password(user.getPwd())
+                        .build();
+                return userDetails;
+
+            }
+        };
     }
 
 }

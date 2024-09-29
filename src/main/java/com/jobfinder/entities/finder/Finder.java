@@ -1,32 +1,29 @@
-package com.jobfinder.entities;
+package com.jobfinder.entities.finder;
 
+import com.jobfinder.entities.BaseEntity;
 import com.jobfinder.entities.user.UserJobFinder;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
-public class Finder extends BaseEntity{
+@Builder
+public class Finder extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userId;
+    private Integer finderId;
 
     @OneToOne
     @JoinColumn(name = "account_id")
-    private UserJobFinder account;
+    private UserJobFinder user;
 
-    private String userCode;
+    private String finderCode;
 
     private String nom;
 

@@ -1,5 +1,6 @@
 package com.jobfinder.entities.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobfinder.entities.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,12 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -26,14 +23,16 @@ public class UserJobFinder extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer accountId;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
+    @JsonIgnore
+    @Column(nullable = false)
     private String pwd;
 
     private LocalDate lastConnection;
 
-    private String activationCode;
+    private Integer activationCode;
 
     private LocalDate codeSentAt;
 

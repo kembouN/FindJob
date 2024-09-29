@@ -2,21 +2,24 @@ package com.jobfinder.entities.job;
 
 import com.jobfinder.entities.BaseEntity;
 import com.jobfinder.entities.finder.Finder;
-import com.jobfinder.entities.user.UserJobFinder;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class Localisation extends BaseEntity {
+public class DemandeEmploi extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer localisationId;
+    private Integer demandeId;
 
     @ManyToOne
     @JoinColumn(name = "finder_id")
@@ -26,7 +29,10 @@ public class Localisation extends BaseEntity {
     @JoinColumn(name = "job_id")
     private Job job;
 
-    private String pays;
+    private String code;
 
-    private String ville;
+    private LocalDate dateDemande;
+
+    private String uploadedCv;
+
 }

@@ -8,9 +8,11 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+@Service
 public class JwtUtil {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -18,7 +20,7 @@ public class JwtUtil {
     @Value("${app.jwt.issuer}")
     private String jwtIssuer;
 
-    private String createJwtToken(UserJobFinder user){
+    public String createJwtToken(UserJobFinder user){
         String role = user.isEnterprise() ? "ENTREPRISE" : "CHERCHEUR";
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtIssuer)
@@ -28,10 +30,10 @@ public class JwtUtil {
                 .claim("role", role)
                 .build();
 
-        var encoder = new NimbusJwtEncoder(
+        NimbusJwtEncoder encoder = new NimbusJwtEncoder(
                 new ImmutableSecret<>(jwtSecret.getBytes())
         );
-        var params = JwtEncoderParameters.from(
+        JwtEncoderParameters params = JwtEncoderParameters.from(
                 JwsHeader.with(MacAlgorithm.HS256).build(),
                 claims
         );
