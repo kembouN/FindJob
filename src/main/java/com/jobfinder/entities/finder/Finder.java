@@ -33,7 +33,10 @@ public class Finder extends BaseEntity {
 
     private LocalDate dateNaissance;
 
-    private String sexe;
+    @Enumerated(EnumType.STRING)
+    private SexEnum sexe;
 
     private Integer telephone;
+
+    private String photoProfil;
 }

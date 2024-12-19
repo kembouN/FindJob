@@ -14,9 +14,12 @@ import com.jobfinder.repositories.user.UserJobFinderRepository;
 import com.jobfinder.services.user.IUserJobFinderDetailsService;
 import com.jobfinder.services.utils.GenerateCodeUtils;
 import com.jobfinder.validator.ObjectValidator;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +29,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Random;
 
@@ -41,6 +45,8 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
 
     private ObjectValidator<LoginRequest> authValidator;
 
+    private ObjectValidator<ChangePasswordRequest> changePasswordValidator;
+
     private AuthenticationManager authManager;
 
     private GenerateCodeUtils generateCodeUtils;
@@ -48,6 +54,8 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
     private JwtUtil jwtUtil;
 
     private FinderRepository finderRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(UserJobFinderDetailsService.class);
 
     /*@Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -111,7 +119,7 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
     public UserJobFinder register(RegisterUserRequest request) {
         validatorFinder.validate(request);
         if (!request.getPassword().equals(request.getCPassword())){
-            throw new OperationNonPermittedException("La confirmation du mot de passe ne correspond pas");
+            throw new OperationNonPermittedException("La confirmation du mot de passe est incorrecte");
         }
 
         if (userJobFinderRepository.findUserJobFinderByUsername(request.getUsername()) != null){
@@ -132,23 +140,65 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
     }
 
     @Override
-    public UserDto resetPassword(Integer accountId) {
+    @Transactional
+    public Void resetPassword(String email) {
+        UserJobFinder user = userJobFinderRepository.findUserJobFinderByUsername(email);
+        if (user == null){
+            throw new EntityNotFoundException("Aucun compte ne correspond à cette adresse");
+        }
+        String newPwdGenerate = generateCodeUtils.generateUserStrongPasswordReset(user);
+        log.info(newPwdGenerate);
+        user.setPwd(passwordEncoder.encode(newPwdGenerate));
+        userJobFinderRepository.save(user);
+        //TODO
+        //Implementer l'envoie de l'email contenant le nouveau mot de passe
         return null;
     }
 
     @Override
-    public UserDto changePassword(Integer accountId, ChangePasswordRequest request) {
+    @Transactional
+    public Void changePassword(Integer accountId, ChangePasswordRequest request) {
+        changePasswordValidator.validate(request);
+        ChangePasswordRequest.checkPasswordConfimation(request.getNewPassword(), request.getCNewPassword());
+        UserJobFinder user = userJobFinderRepository.findByAccountId(accountId).orElseThrow(() -> new EntityNotFoundException("Compte utilisateur inconnu"));
+        if (!passwordEncoder.matches(request.getLastPassword(), user.getPwd())){
+            throw new OperationNonPermittedException("Mot de passe incorrect");
+        }
+        user.setPwd(passwordEncoder.encode(request.getNewPassword()));
+        userJobFinderRepository.save(user);
         return null;
     }
 
     @Override
+    @Transactional
     public Void activateAccount(Integer accountId, Integer activationCode) {
-        UserJobFinder user = userJobFinderRepository.findByAccountId(accountId).orElseThrow(() -> new EntityNotFoundException("Le compte utilisateur est introuvable"));
+        UserJobFinder user = userJobFinderRepository.findByAccountId(accountId).orElseThrow(() -> new EntityNotFoundException("Compte utilisateur inconnu"));
 
-        if (user.getActivationCode() != activationCode){
+        Instant currentDate = Instant.now();
+        Instant deadLine = Instant.parse(user.getCreatedAt().toString()).plusSeconds(24 * 3600);
+        if (!user.getActivationCode().equals(activationCode)){
             throw new OperationNonPermittedException("Opération échouée, code d'activation incorrect");
+        }else if (currentDate.isAfter(deadLine)) {
+            throw new OperationNonPermittedException("Ce code d'activation n'est plus valide, réclamez en un nouveau");
         }
         user.setActive(true);
+        userJobFinderRepository.save(user);
+        return null;
+    }
+
+    @Override
+    public Void deactivateAccountWithId(Integer accountId) {
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public Void deactivateAccountWithEmail(String email) {
+        UserJobFinder user = userJobFinderRepository.findUserJobFinderByUsername(email);
+        if (user == null) {
+            throw new EntityNotFoundException("Aucun compte ne correspond à l'adresse entrée");
+        }
+        user.setActive(false);
         userJobFinderRepository.save(user);
         return null;
     }

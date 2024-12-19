@@ -1,5 +1,6 @@
 package com.jobfinder.dto.user;
 
+import com.jobfinder.entities.finder.SexEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +32,7 @@ public class UserDto {
 
     private LocalDate dateNaissance;
 
-    private String sexe;
+    private SexEnum sexe;
 
     private Integer telephone;
 

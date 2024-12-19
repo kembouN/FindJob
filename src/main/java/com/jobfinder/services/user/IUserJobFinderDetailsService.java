@@ -14,10 +14,14 @@ public interface IUserJobFinderDetailsService {
 
     UserJobFinder register(RegisterUserRequest resquest);
 
-    UserDto resetPassword(Integer accountId);
+    Void resetPassword(String email);
 
-    UserDto changePassword(Integer accountId, ChangePasswordRequest request);
+    Void changePassword(Integer accountId, ChangePasswordRequest request);
 
     Void activateAccount(Integer userId, Integer activationCode);
+
+    Void deactivateAccountWithId(Integer accountId);
+
+    Void deactivateAccountWithEmail(String email);
 
 }

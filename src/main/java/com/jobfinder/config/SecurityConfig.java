@@ -37,13 +37,16 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private static final String[] SWAGGER_WHITELIST = {
+    private static final String[] AUTHORIZED_PATHS = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/swagger-resources",
-            "/finder",
-            "/user/**"
+            "/api/v1/finder",
+            "/api/v1/user/reset-password",
+            "/api/v1/user/activate-account/{accountId}",
+            "/api/v1/user/register",
+            "/api/v1/user/login"
     };
 
     @Value("${app.jwt.secret}")
@@ -56,14 +59,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsFilter()))
+                //.cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                 {
                     try
                     {
                         auth.requestMatchers(
-                                SWAGGER_WHITELIST
+                                AUTHORIZED_PATHS
                         ).permitAll()
                                 .anyRequest().authenticated();
                     } catch (Exception e){
@@ -75,7 +78,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
+    /*@Bean
     public CorsConfigurationSource corsFilter() {
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
@@ -87,6 +90,8 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
+     */
 
     @Bean
     public JwtDecoder jwtDecoder() {

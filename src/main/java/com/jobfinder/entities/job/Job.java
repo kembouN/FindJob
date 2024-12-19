@@ -34,6 +34,8 @@ public class Job extends BaseEntity {
 
     private Integer Salaire;
 
+    private String domaine;
+
     private String description;
 
     private LocalDate delai;

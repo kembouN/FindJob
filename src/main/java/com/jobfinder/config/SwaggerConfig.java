@@ -42,7 +42,7 @@ public class SwaggerConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .servers(Arrays.asList(
-                        new Server().url("http://localhost:8000").description("Local Server")
+                        new Server().url("http://localhost:8001").description("Local Server")
                 ));
 
     }
