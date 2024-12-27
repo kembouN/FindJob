@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
@@ -174,8 +175,8 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
     public Void activateAccount(Integer accountId, Integer activationCode) {
         UserJobFinder user = userJobFinderRepository.findByAccountId(accountId).orElseThrow(() -> new EntityNotFoundException("Compte utilisateur inconnu"));
 
-        Instant currentDate = Instant.now();
-        Instant deadLine = Instant.parse(user.getCreatedAt().toString()).plusSeconds(24 * 3600);
+        LocalDateTime currentDate = LocalDateTime.now();
+        LocalDateTime deadLine = user.getCreatedAt().atStartOfDay().plusHours(24);
         if (!user.getActivationCode().equals(activationCode)){
             throw new OperationNonPermittedException("Opération échouée, code d'activation incorrect");
         }else if (currentDate.isAfter(deadLine)) {

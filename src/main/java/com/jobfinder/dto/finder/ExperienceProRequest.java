@@ -1,7 +1,5 @@
 package com.jobfinder.dto.finder;
 
-import com.jobfinder.entities.finder.Competence;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,11 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CompetenceRequest {
-
-    @NotNull(message = "Veuillez renseigner au moins une compétence")
-    private List<String> libelles;
+public class ExperienceProRequest {
 
     @NotNull(message = "Utilisateur non identifié")
     private Integer finderId;
+
+    private List<ExperienceProDto> experiences;
 }

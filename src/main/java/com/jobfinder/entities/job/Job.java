@@ -1,23 +1,21 @@
 package com.jobfinder.entities.job;
 
 import com.jobfinder.entities.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.jobfinder.entities.finder.Finder;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Job extends BaseEntity {
 
     @Id
@@ -28,16 +26,36 @@ public class Job extends BaseEntity {
 
     private boolean isFullTime;
 
+    @OneToOne
+    @JoinColumn(name = "type_contrat")
+    private TypeContrat typeContrat;
+
     private Integer anneeExpMin;
 
     private boolean isRemote;
 
-    private Integer Salaire;
+    private Integer salaire;
 
     private String domaine;
 
     private String description;
 
     private LocalDate delai;
+
+    @OneToOne
+    @JoinColumn(name = "publisher")
+    private Finder publisher;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    private Set<Mission> missions;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    private Set<Exigence> exigences;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    private Set<NiveauRequis> niveauRequis;
+
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    private Set<Localisation> localisations;
 
 }

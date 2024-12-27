@@ -11,4 +11,6 @@ public interface ICompetenceService {
     List<Competence> addCompetence(CompetenceRequest libelles);
 
     CompetenceListResponse getAllFinderCompetences(Integer finderId);
+
+    Void deleteCompetence(List<Integer> competenceIds);
 }

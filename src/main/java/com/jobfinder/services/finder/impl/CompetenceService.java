@@ -6,14 +6,19 @@ import com.jobfinder.dto.finder.FinderResponse;
 import com.jobfinder.entities.finder.Competence;
 import com.jobfinder.entities.finder.Finder;
 import com.jobfinder.entities.job.Localisation;
+import com.jobfinder.exception.OperationNonPermittedException;
 import com.jobfinder.repositories.finder.CompetenceRepository;
 import com.jobfinder.repositories.finder.FinderRepository;
 import com.jobfinder.repositories.job.LocalisationRepository;
 import com.jobfinder.services.finder.ICompetenceService;
 import com.jobfinder.validator.ObjectValidator;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,12 +28,18 @@ import java.util.List;
 @NoArgsConstructor
 public class CompetenceService implements ICompetenceService {
 
+    @Autowired
     private ObjectValidator<CompetenceRequest> competenceValidator;
 
+    private static final Logger log = LoggerFactory.getLogger(CompetenceService.class);
+
+    @Autowired
     private FinderRepository finderRepository;
 
+    @Autowired
     private CompetenceRepository competenceRepository;
 
+    @Autowired
     private LocalisationRepository localisationRepository;
 
 
@@ -37,12 +48,13 @@ public class CompetenceService implements ICompetenceService {
         competenceValidator.validate(request);
         Finder finder = finderRepository.findByFinderId(request.getFinderId()).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
         for (String libelle:request.getLibelles() ) {
-            if (competenceRepository.countAllByLibelleIgnoreCase(libelle.trim()) == 0){
-                competenceRepository.save(Competence.builder()
-                                .finder(finder)
-                                .libelle(libelle.trim())
-                        .build());
+            if (competenceRepository.countAllByLibelleIgnoreCaseAndFinderFinderId(libelle.trim(), finder.getFinderId()) != 0){
+                throw new OperationNonPermittedException("Compétence n°" +request.getLibelles().indexOf(libelle)+1+" déjà ajoutée");
             }
+            competenceRepository.save(Competence.builder()
+                    .finder(finder)
+                    .libelle(libelle.trim())
+                    .build());
         }
        return competenceRepository.findAllByFinderFinderId(request.getFinderId());
 
@@ -66,5 +78,18 @@ public class CompetenceService implements ICompetenceService {
                         .build())
                 .competences(competences)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public Void deleteCompetence(List<Integer> competenceIds) {
+        for (Integer competenceId:competenceIds) {
+            int index = competenceIds.indexOf(competenceId)+1;
+            Competence competence = competenceRepository.findDistinctByCompetenceId(competenceId);
+            if (competence == null)
+                throw new EntityNotFoundException("L'éléments n°"+ index +"est introuvable");
+        }
+        competenceRepository.deleteAllById(competenceIds);
+        return null;
     }
 }

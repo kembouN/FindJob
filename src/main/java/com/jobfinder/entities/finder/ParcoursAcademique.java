@@ -1,23 +1,23 @@
 package com.jobfinder.entities.finder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobfinder.entities.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ParcoursAcademique extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer parcoursId;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "finder_id")
     private Finder finder;

@@ -12,6 +12,8 @@ public interface CompetenceRepository extends JpaRepository<Competence, Integer>
 
     List<Competence> findAllByFinderFinderId(Integer finderId);
 
-    int countAllByLibelleIgnoreCase(String libelle);
+    Competence findDistinctByCompetenceId(Integer competenceId);
+
+    int countAllByLibelleIgnoreCaseAndFinderFinderId(String libelle, Integer finderId);
 
 }

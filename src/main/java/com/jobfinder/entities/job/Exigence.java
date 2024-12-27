@@ -2,34 +2,26 @@ package com.jobfinder.entities.job;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobfinder.entities.BaseEntity;
-import com.jobfinder.entities.finder.Finder;
-import com.jobfinder.entities.user.UserJobFinder;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
-public class Localisation extends BaseEntity {
+public class Exigence extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer localisationId;
-
-    @JsonIgnore
-    @OneToOne
-    @JoinColumn(name = "finder_id")
-    private Finder finder;
+    private Integer exigenceId;
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;
 
-    private String pays;
+    private String description;
 
-    private String ville;
 }

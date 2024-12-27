@@ -2,16 +2,14 @@ package com.jobfinder.entities.finder;
 
 import com.jobfinder.entities.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Diplome extends BaseEntity {
 
     @Id

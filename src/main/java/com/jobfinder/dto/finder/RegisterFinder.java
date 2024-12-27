@@ -43,7 +43,7 @@ public class RegisterFinder {
     @NotNull(message = "Veuillez renseigner votre date de naissance")
     private LocalDate birthDay;
 
-    @NotEmpty(message = "Veuillez renseigner votre sexe")
+    @NotNull(message = "Veuillez renseigner votre sexe")
     private SexEnum sexe;
 
     @NotNull(message = "Renseignez un numéro de téléphone")
