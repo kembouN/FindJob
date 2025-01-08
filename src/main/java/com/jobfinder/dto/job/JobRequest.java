@@ -46,10 +46,10 @@ public class JobRequest {
 
     private String town;
 
-    @NotNull
+    @NotNull(message = "Aucune exigence n'a été renseignée")
     private List<String> exigences;
 
-    @NotNull
+    @NotNull(message = "Aucune mission n'a été renseignée")
     private List<String> missions;
 
     private List<NiveauRequisDto> studyLevels;

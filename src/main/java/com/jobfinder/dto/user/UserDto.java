@@ -14,6 +14,10 @@ import java.time.LocalDate;
 @Builder
 public class UserDto {
 
+    private Integer userId;
+
+    private Integer finderId;
+
     private String username;
 
     private LocalDate derniereConnection;

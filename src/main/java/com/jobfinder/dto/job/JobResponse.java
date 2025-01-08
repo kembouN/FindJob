@@ -1,5 +1,6 @@
 package com.jobfinder.dto.job;
 
+import com.jobfinder.dto.finder.FinderResponse;
 import com.jobfinder.entities.job.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,11 +31,19 @@ public class JobResponse {
 
     private String domaine;
 
+    private Integer totalCandidat;
+
+    private String recruiter;
+
+    private String recruiterImage;
+
     private TypeContrat typeContrat;
 
     private String jobDescription;
 
     private LocalDate delai;
+
+    private LocalDate uploadDate;
 
     private Set<Exigence> exigences;
 

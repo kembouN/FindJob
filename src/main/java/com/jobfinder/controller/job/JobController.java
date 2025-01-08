@@ -1,9 +1,11 @@
 package com.jobfinder.controller.job;
 
 import com.jobfinder.dto.BaseResponse;
-import com.jobfinder.dto.job.JobRequest;
-import com.jobfinder.dto.job.JobResponse;
+import com.jobfinder.dto.job.*;
+import com.jobfinder.entities.job.Exigence;
 import com.jobfinder.entities.job.Job;
+import com.jobfinder.entities.job.Mission;
+import com.jobfinder.entities.job.NiveauRequis;
 import com.jobfinder.services.job.IJobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +53,42 @@ public class JobController {
                         HttpStatus.OK.value(),
                         "Opération réussie",
                         jobService.getJobByResearch(jobTitle, isFullTime, isRemote, salary, domaine, typeContrat, publisher, localisation)
+                )
+        );
+    }
+
+    @PostMapping("/missions")
+    @Operation(description = "Ajouter des missions à un job")
+    public ResponseEntity<BaseResponse<List<Mission>>> storeMissions(@RequestBody MissionRequest request){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Mission(s) ajoutée(s)",
+                        jobService.addMision(request)
+                )
+        );
+    }
+
+    @PostMapping("/exigences")
+    @Operation(description = "Ajouter des exigences à un job")
+    public ResponseEntity<BaseResponse<List<Exigence>>> storeExigences(@RequestBody ExigenceRequest request){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Exigence(s) ajoutée(s)",
+                        jobService.addExigence(request)
+                )
+        );
+    }
+
+    @PostMapping("/study-level")
+    @Operation(description = "Ajouter des niveaux d'étude  un job")
+    public ResponseEntity<BaseResponse<List<NiveauRequis>>> storeLevel(NiveauRequisRequest request){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Niveau(x) d'étude ajouté(s)",
+                        jobService.addStudyLevel(request)
                 )
         );
     }

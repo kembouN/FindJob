@@ -4,6 +4,7 @@ import com.jobfinder.entities.BaseEntity;
 import com.jobfinder.entities.finder.Finder;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -39,6 +40,9 @@ public class Job extends BaseEntity {
     private String domaine;
 
     private String description;
+
+    @ColumnDefault(value = "0")
+    private Integer totalCandidat;
 
     private LocalDate delai;
 

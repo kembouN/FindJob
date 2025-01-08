@@ -90,6 +90,8 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
 
         if (finder != null){
             UserDto userDto = new UserDto(
+                    user.getAccountId(),
+                    finder.getFinderId(),
                     user.getUsername(),
                     LocalDate.now(),
                     user.isActive(),

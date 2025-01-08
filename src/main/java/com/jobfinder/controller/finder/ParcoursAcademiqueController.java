@@ -2,7 +2,6 @@ package com.jobfinder.controller.finder;
 
 import com.jobfinder.dto.BaseResponse;
 import com.jobfinder.dto.finder.ParcoursAcademiqueRequest;
-import com.jobfinder.dto.finder.ParcoursAcademiqueResponse;
 import com.jobfinder.entities.finder.ParcoursAcademique;
 import com.jobfinder.services.finder.IParcoursAcademiqueService;
 import io.swagger.v3.oas.annotations.Operation;

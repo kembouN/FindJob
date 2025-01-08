@@ -1,16 +1,14 @@
 package com.jobfinder.services.job.impl;
 
-import com.jobfinder.dto.job.JobRequest;
-import com.jobfinder.dto.job.JobResponse;
-import com.jobfinder.dto.job.LocalisationRequest;
-import com.jobfinder.dto.job.NiveauRequisDto;
+import com.jobfinder.dto.finder.FinderResponse;
+import com.jobfinder.dto.job.*;
 import com.jobfinder.entities.finder.Finder;
 import com.jobfinder.entities.job.*;
 import com.jobfinder.exception.OperationNonPermittedException;
+import com.jobfinder.services.job.IJobService;
 import com.jobfinder.repositories.finder.DiplomeRepository;
 import com.jobfinder.repositories.finder.FinderRepository;
 import com.jobfinder.repositories.job.*;
-import com.jobfinder.services.job.IJobService;
 import com.jobfinder.services.job.ILocalisationService;
 import com.jobfinder.services.job.JobSpecification;
 import com.jobfinder.validator.ObjectValidator;
@@ -30,6 +28,15 @@ public class JobService implements IJobService {
 
     @Autowired
     private ObjectValidator<JobRequest> jobValidator;
+
+    @Autowired
+    private ObjectValidator<MissionRequest> missionValidator;
+
+    @Autowired
+    private ObjectValidator<ExigenceRequest> exigenceValidator;
+
+    @Autowired
+    private ObjectValidator<NiveauRequisRequest> levelValidator;
 
     @Autowired
     private TypeContratRepository contratRepository;
@@ -89,48 +96,25 @@ public class JobService implements IJobService {
                         .build()
         );
 
-        for (String exigence : request.getExigences()) {
-            int rang = request.getExigences().indexOf(exigence);
-            if (exigenceRepository.countAllByJobAndDescriptionIgnoreCase(savedJob, exigence.trim()) !=0){
-                throw new OperationNonPermittedException("L'exigence n°"+rang+" existe déjà pour ce job");
-            }
-            exigenceRepository.save(
-                    Exigence.builder()
-                            .description(exigence)
-                            .job(savedJob)
-                            .build()
-            );
-        }
 
-        for (String mission : request.getMissions()
-             ) {
-            int rang = request.getMissions().indexOf(mission);
-            if (missionRepository.countAllByJobAndDescriptionIgnoreCase(savedJob, mission.trim()) != 0){
-                throw new OperationNonPermittedException("La mission n°"+rang+" est déjà attribué à ce job");
-            }
+        addExigence(ExigenceRequest.builder()
+                .exigences(request.getExigences())
+                .job(savedJob)
+                .build()
+        );
 
-            missionRepository.save(
-                    Mission.builder()
-                            .description(mission)
-                            .job(savedJob)
-                            .build()
-            );
-        }
+        addMision(MissionRequest.builder()
+                .missions(request.getMissions())
+                .job(savedJob)
+                .build()
+        );
 
-        for (NiveauRequisDto niveauRequis : request.getStudyLevels()){
-            int rang = request.getStudyLevels().indexOf(niveauRequis);
-            if (niveauRequisRepository.countAllByJobAndLibelleIgnoreCase(savedJob, niveauRequis.getDescription()) != 0){
-                throw new OperationNonPermittedException("Le niveau d'étude requis n°"+rang+" est déjà attribué à ce job");
-            }
+        addStudyLevel(NiveauRequisRequest.builder()
+                .studyLevel(request.getStudyLevels())
+                .job(savedJob)
+                .build()
+        );
 
-            niveauRequisRepository.save(
-                    NiveauRequis.builder()
-                            .diplome(diplomeRepository.findById(niveauRequis.getDiplomeId()).orElseThrow(() -> new EntityNotFoundException("Diplome introuvable")))
-                            .libelle(niveauRequis.getDescription())
-                            .job(savedJob)
-                            .build()
-            );
-        }
         return savedJob;
 
     }
@@ -167,7 +151,11 @@ public class JobService implements IJobService {
                     .domaine(job.getDomaine())
                     .typeContrat(job.getTypeContrat())
                     .jobDescription(job.getDescription())
+                            .recruiter(job.getPublisher().getNom())
+                            .totalCandidat(job.getTotalCandidat())
                     .delai(job.getDelai())
+                            .recruiterImage(job.getPublisher().getPhotoProfil())
+                            .uploadDate(job.getCreatedAt())
                     .exigences(job.getExigences())
                     .missions(job.getMissions())
                     .levels(job.getNiveauRequis())
@@ -180,5 +168,84 @@ public class JobService implements IJobService {
     @Override
     public Void deleteJob(Integer jobId) {
         return null;
+    }
+
+    @Override
+    @Transactional
+    public List<Mission> addMision(MissionRequest request) {
+        missionValidator.validate(request);
+        List<Mission> result = new ArrayList<>();
+        Job job = checkJob(request.getJob(), request.getJobId());
+        for (String mission : request.getMissions()) {
+            int rang = request.getMissions().indexOf(mission);
+            if (missionRepository.countAllByJobAndDescriptionIgnoreCase(job, mission.trim()) != 0){
+                throw new OperationNonPermittedException("La mission n°"+rang+" est déjà attribué à ce job");
+            }
+
+            result.add(missionRepository.save(
+                    Mission.builder()
+                            .description(mission)
+                            .job(job)
+                            .build()
+            ));
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public List<Exigence> addExigence(ExigenceRequest request) {
+        exigenceValidator.validate(request);
+        List<Exigence> result = new ArrayList<>();
+        Job existJob = checkJob(request.getJob(), request.getJobId());
+        for (String exigence : request.getExigences()) {
+            int rang = request.getExigences().indexOf(exigence);
+            if (exigenceRepository.countAllByJobAndDescriptionIgnoreCase(existJob, exigence.trim()) !=0){
+                throw new OperationNonPermittedException("L'exigence n°"+rang+" existe déjà pour ce job");
+            }
+            result.add(exigenceRepository.save(
+                    Exigence.builder()
+                            .description(exigence)
+                            .job(existJob)
+                            .build()
+            ));
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public List<NiveauRequis> addStudyLevel(NiveauRequisRequest request) {
+        levelValidator.validate(request);
+        List<NiveauRequis> result = new ArrayList<>();
+        Job existJob = checkJob(request.getJob(), request.getJobId());
+        for (NiveauRequisDto niveauRequis : request.getStudyLevel()){
+            int rang = request.getStudyLevel().indexOf(niveauRequis);
+            if (niveauRequisRepository.countAllByJobAndLibelleIgnoreCase(existJob, niveauRequis.getDescription()) != 0){
+                throw new OperationNonPermittedException("Le niveau d'étude requis n°"+rang+" est déjà attribué à ce job");
+            }
+
+            result.add(niveauRequisRepository.save(
+                    NiveauRequis.builder()
+                            .diplome(diplomeRepository.findById(niveauRequis.getDiplomeId()).orElseThrow(() -> new EntityNotFoundException("Diplome introuvable")))
+                            .libelle(niveauRequis.getDescription())
+                            .job(existJob)
+                            .build()
+            ));
+        }
+        return result;
+    }
+
+    private Job checkJob(Job job, Integer jobId){
+        Job existJob;
+        if (job != null){
+            existJob = job;
+        } else if (jobId != null) {
+            existJob = jobRepository.findById(jobId).orElseThrow(()
+                    -> new EntityNotFoundException("Ce job n'esxiste pas"));
+        }else {
+            throw new OperationNonPermittedException("Le Job est introuvable");
+        }
+        return existJob;
     }
 }

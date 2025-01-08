@@ -3,7 +3,6 @@ package com.jobfinder.controller.user;
 import com.jobfinder.dto.BaseResponse;
 import com.jobfinder.dto.auth.LoginRequest;
 import com.jobfinder.dto.auth.LoginResponse;
-import com.jobfinder.dto.finder.RegisterFinder;
 import com.jobfinder.dto.user.ChangePasswordRequest;
 import com.jobfinder.dto.user.RegisterUserRequest;
 import com.jobfinder.entities.user.UserJobFinder;

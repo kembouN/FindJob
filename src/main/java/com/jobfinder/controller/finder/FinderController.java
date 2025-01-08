@@ -2,9 +2,7 @@ package com.jobfinder.controller.finder;
 
 import com.jobfinder.dto.BaseResponse;
 import com.jobfinder.dto.finder.*;
-import com.jobfinder.entities.finder.Competence;
 import com.jobfinder.entities.finder.Finder;
-import com.jobfinder.entities.finder.ParcoursAcademique;
 import com.jobfinder.services.finder.ICompetenceService;
 import com.jobfinder.services.finder.IFinderService;
 import com.jobfinder.services.finder.IParcoursAcademiqueService;
@@ -13,8 +11,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @AllArgsConstructor

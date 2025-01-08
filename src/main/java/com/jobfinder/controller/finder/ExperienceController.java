@@ -1,7 +1,6 @@
 package com.jobfinder.controller.finder;
 
 import com.jobfinder.dto.BaseResponse;
-import com.jobfinder.dto.finder.ExperienceProDto;
 import com.jobfinder.dto.finder.ExperienceProRequest;
 import com.jobfinder.entities.finder.ExperiencePro;
 import com.jobfinder.services.finder.IExperienceProService;

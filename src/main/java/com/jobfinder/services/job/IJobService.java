@@ -1,8 +1,10 @@
 package com.jobfinder.services.job;
 
-import com.jobfinder.dto.job.JobRequest;
-import com.jobfinder.dto.job.JobResponse;
+import com.jobfinder.dto.job.*;
+import com.jobfinder.entities.job.Exigence;
 import com.jobfinder.entities.job.Job;
+import com.jobfinder.entities.job.Mission;
+import com.jobfinder.entities.job.NiveauRequis;
 
 import java.util.List;
 
@@ -22,4 +24,10 @@ public interface IJobService {
             );
 
     Void deleteJob(Integer jobId);
+
+    List<Mission> addMision(MissionRequest request);
+
+    List<Exigence> addExigence(ExigenceRequest request);
+
+    List<NiveauRequis> addStudyLevel(NiveauRequisRequest request);
 }
