@@ -1,6 +1,7 @@
 package com.jobfinder.entities.finder;
 
 import com.jobfinder.entities.BaseEntity;
+import com.jobfinder.entities.job.Localisation;
 import com.jobfinder.entities.user.UserJobFinder;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,6 +32,10 @@ public class Finder extends BaseEntity {
 
     private String email;
 
+    private String sector;
+
+    private String activity;
+
     private LocalDate dateNaissance;
 
     @Enumerated(EnumType.STRING)
@@ -38,5 +43,10 @@ public class Finder extends BaseEntity {
 
     private Integer telephone;
 
-    private String photoProfil;
+    @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
+    private byte[] photoProfil;
+
+    @OneToOne(mappedBy = "finder", fetch = FetchType.LAZY)
+    private Localisation localisation;
 }

@@ -6,9 +6,11 @@ import com.jobfinder.dto.user.ChangePasswordRequest;
 import com.jobfinder.dto.user.UserDto;
 import com.jobfinder.dto.auth.LoginRequest;
 import com.jobfinder.dto.user.RegisterUserRequest;
+import com.jobfinder.entities.enterprise.Enterprise;
 import com.jobfinder.entities.finder.Finder;
 import com.jobfinder.entities.user.UserJobFinder;
 import com.jobfinder.exception.OperationNonPermittedException;
+import com.jobfinder.repositories.enterprise.EnterpriseRepository;
 import com.jobfinder.repositories.finder.FinderRepository;
 import com.jobfinder.repositories.user.UserJobFinderRepository;
 import com.jobfinder.services.user.IUserJobFinderDetailsService;
@@ -56,22 +58,9 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
 
     private FinderRepository finderRepository;
 
+    private EnterpriseRepository enterpriseRepository;
+
     private static final Logger log = LoggerFactory.getLogger(UserJobFinderDetailsService.class);
-
-    /*@Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserJobFinder jobFinder = userJobFinderRepository.findUserJobFinderByUsername(username);
-
-        if (jobFinder != null) {
-            UserDetails userDetails = User.withUsername(jobFinder.getUsername())
-                    .password(jobFinder.getPwd())
-                    .build();
-            return userDetails;
-        }
-        return null;
-    }
-
-     */
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -87,6 +76,7 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
         userJobFinderRepository.save(user);
 
         Finder finder = finderRepository.findByUser(user);
+        Enterprise enterprise = enterpriseRepository.findByUser(user);
 
         if (finder != null){
             UserDto userDto = new UserDto(
@@ -96,21 +86,46 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
                     LocalDate.now(),
                     user.isActive(),
                     user.isEnterprise(),
+                    user.isSuperAdmin(),
                     finder.getFinderCode(),
                     finder.getNom(),
                     finder.getPrenom(),
                     finder.getEmail(),
                     finder.getDateNaissance(),
                     finder.getSexe(),
-                    finder.getTelephone()
+                    finder.getTelephone(),
+                    finder.getPhotoProfil()
             );
             return LoginResponse.builder()
                     .token(jwtUtil.createJwtToken(user))
                     .user(userDto)
                     .build();
-        }else {
+        }else if(enterprise != null) {
+            UserDto userDto = UserDto.builder()
+                    .accountId(user.getAccountId())
+                    .userId(enterprise.getEnterpriseId())
+                    .nom(enterprise.getEnterpriseName())
+                    .isEnterprise(user.isEnterprise())
+                    .derniereConnection(LocalDate.now())
+                    .profilePic(enterprise.getProfil())
+                    .email(user.getUsername())
+                    .codeUtilisateur(enterprise.getEnterpriseCode())
+                    .telephone(enterprise.getTelephone())
+                    .isActive(user.isActive())
+                    .build();
+
             return LoginResponse.builder()
-                    .user(null)
+                    .token(jwtUtil.createJwtToken(user))
+                    .user(userDto)
+                    .build();
+        }else{
+            return LoginResponse.builder()
+                    .user(UserDto.builder()
+                            .accountId(user.getAccountId())
+                            .username(user.getUsername())
+                            .derniereConnection(LocalDate.now())
+                            .isAdmin(user.isSuperAdmin())
+                            .build())
                     .token(jwtUtil.createJwtToken(user))
                     .build();
         }
@@ -126,14 +141,14 @@ public class UserJobFinderDetailsService implements IUserJobFinderDetailsService
         }
 
         if (userJobFinderRepository.findUserJobFinderByUsername(request.getUsername()) != null){
-            throw new OperationNonPermittedException("L'adresse email est déjà utilisé");
+            throw new OperationNonPermittedException("L'adresse email est déjà utilisée");
         }
 
         UserJobFinder user = new UserJobFinder();
         user.setUsername(request.getUsername());
         user.setPwd(passwordEncoder.encode(request.getPassword()));
         user.setActivationCode(generateCodeUtils.generateActivationCode());
-        user.setActive(request.getIsSuperAdmin() ? true : false);
+        user.setActive(request.getIsSuperAdmin());
         user.setSuperAdmin(request.getIsSuperAdmin());
         user.setEnterprise(request.isEnterprise());
         return userJobFinderRepository.save(user);

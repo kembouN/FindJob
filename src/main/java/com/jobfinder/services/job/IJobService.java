@@ -30,4 +30,6 @@ public interface IJobService {
     List<Exigence> addExigence(ExigenceRequest request);
 
     List<NiveauRequis> addStudyLevel(NiveauRequisRequest request);
+
+    List<JobResponse> getJobByFinderWithFilter(Integer finderId, String jobTitle, Boolean isFullTime, Boolean isRemote, Integer salary, String typeContrat, String localisation);
 }

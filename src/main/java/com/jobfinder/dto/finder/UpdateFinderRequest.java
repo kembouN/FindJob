@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -36,6 +37,8 @@ public class UpdateFinderRequest {
     @NotNull(message = "Renseignez un numéro de téléphone")
     private Integer numTel;
 
-    private String photoProfil;
+    private String sector;
+
+    private String activity;
 
 }

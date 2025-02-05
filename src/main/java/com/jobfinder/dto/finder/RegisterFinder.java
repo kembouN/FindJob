@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -40,15 +41,15 @@ public class RegisterFinder {
     @NotEmpty(message = "Veuillez entrer votre ville")
     private String ville;
 
-    @NotNull(message = "Veuillez renseigner votre date de naissance")
+    //@NotNull(message = "Veuillez renseigner votre date de naissance")
     private LocalDate birthDay;
 
-    @NotNull(message = "Veuillez renseigner votre sexe")
+    //@NotNull(message = "Veuillez renseigner votre sexe")
     private SexEnum sexe;
 
     @NotNull(message = "Renseignez un numéro de téléphone")
     private Integer numTel;
 
-    private String photoProfil;
+    private MultipartFile photoProfil;
 
 }

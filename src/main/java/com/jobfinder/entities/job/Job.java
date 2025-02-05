@@ -1,6 +1,7 @@
 package com.jobfinder.entities.job;
 
 import com.jobfinder.entities.BaseEntity;
+import com.jobfinder.entities.enterprise.Enterprise;
 import com.jobfinder.entities.finder.Finder;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,12 +44,20 @@ public class Job extends BaseEntity {
 
     @ColumnDefault(value = "0")
     private Integer totalCandidat;
-
+/*
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private boolean isDeleted;
+*/
     private LocalDate delai;
 
     @OneToOne
     @JoinColumn(name = "publisher")
-    private Finder publisher;
+    private Finder finder;
+
+    @OneToOne
+    @JoinColumn(name = "enterprise")
+    private Enterprise enterprise;
 
     @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
     private Set<Mission> missions;

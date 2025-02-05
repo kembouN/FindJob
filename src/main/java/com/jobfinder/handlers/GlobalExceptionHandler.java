@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -161,5 +162,18 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(representation);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ExceptionRepresentation> handleIOException(){
+        String[] content = new String[1];
+        ExceptionRepresentation representation = ExceptionRepresentation.builder()
+                .message("Erreur lors du chargement du fichier")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .content(content)
+                .build();
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(representation);
     }
 }

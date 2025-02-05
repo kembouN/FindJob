@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Random;
 
 @Service
@@ -16,18 +17,24 @@ public class GenerateCodeUtils {
 
     public String generateUserStrongPasswordReset(UserJobFinder user){
         String[] userPseudo = user.getUsername().split("[.@]+");
-        Integer year = user.getCreatedAt().getYear();
+        int year = user.getCreatedAt().getYear();
         Integer month = user.getCreatedAt().getMonthValue();
-        String generatedPwd = "!"+""+userPseudo+""+year+""+generateActivationCode();
-        return generatedPwd;
+        return "!"+""+ Arrays.toString(userPseudo) +""+year+""+generateActivationCode();
     }
 
     public String generateFinderCode(){
-        Integer year = LocalDate.now().getYear();
-        Integer month = LocalDate.now().getMonthValue();
-        Integer day = LocalDate.now().getDayOfMonth();
-        Instant time = Instant.now();
-        return "FD"+""+year+""+month+""+day+""+time;
+        int year = LocalDate.now().getYear();
+        int month = LocalDate.now().getMonthValue();
+        int day = LocalDate.now().getDayOfMonth();
+        return "FD"+""+year+""+month+""+day;
+    }
+
+    public String generateEnterpriseCode(){
+        int year = LocalDate.now().getYear();
+        int month = LocalDate.now().getMonthValue();
+        int day = LocalDate.now().getDayOfMonth();
+        return "ET"+""+year+""+month+""+day;
+
     }
 
 }

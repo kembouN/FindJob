@@ -46,7 +46,8 @@ public class SecurityConfig {
             "/api/v1/user/reset-password",
             "/api/v1/user/activate-account/{accountId}",
             "/api/v1/user/register",
-            "/api/v1/user/login"
+            "/api/v1/user/login",
+            "/api/v1/job/list"
     };
 
     @Value("${app.jwt.secret}")
@@ -59,7 +60,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                //.cors(cors -> cors.disable())
+                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsFilter()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                 {
@@ -78,7 +79,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    /*@Bean
+    @Bean
     public CorsConfigurationSource corsFilter() {
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(false);
@@ -91,7 +92,6 @@ public class SecurityConfig {
         return source;
     }
 
-     */
 
     @Bean
     public JwtDecoder jwtDecoder() {

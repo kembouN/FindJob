@@ -53,7 +53,7 @@ public class JobSpecification {
             if (domaine == null || domaine.isEmpty()){
                 return null;
             }
-            return criteriaBuilder.like(criteriaBuilder.lower(root.get("isFullTime")), "%"+domaine.toLowerCase()+"%");
+            return criteriaBuilder.like(criteriaBuilder.lower(root.get("domaine")), "%"+domaine.toLowerCase()+"%");
         });
     }
 
@@ -117,6 +117,16 @@ public class JobSpecification {
                     criteriaBuilder.like(criteriaBuilder.lower(jobLocalisationJoin.get("pays")), "%"+localisation.toLowerCase()+"%" ),
                     criteriaBuilder.like(criteriaBuilder.lower(jobLocalisationJoin.get("ville")), "%"+localisation.toLowerCase()+"%")
                     );
+        };
+    }
+
+    public static Specification<Job> publiserEquals(Finder publisher){
+        return (root, query, criteriaBuilder) -> {
+            if(publisher == null){
+                return null;
+            }
+
+            return criteriaBuilder.equal(root.get("publisher"), publisher);
         };
     }
 }

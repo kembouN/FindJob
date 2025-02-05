@@ -36,7 +36,7 @@ public class JobController {
         );
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(description = "Obtenir la liste des offres d'emploi, selon différents critères de recherches")
     public ResponseEntity<BaseResponse<List<JobResponse>>> getAllJob(
             @RequestParam(required = false) String jobTitle,
@@ -53,6 +53,26 @@ public class JobController {
                         HttpStatus.OK.value(),
                         "Opération réussie",
                         jobService.getJobByResearch(jobTitle, isFullTime, isRemote, salary, domaine, typeContrat, publisher, localisation)
+                )
+        );
+    }
+
+    @GetMapping("/list-by/finder/{finderId}")
+    @Operation(description = "Récupérer une liste de job en fonction de l'utilisateur. Soit une liste de job correspondant aux domaine d'un chercheur, soit les jobs qu'un recruteur a publié")
+    public ResponseEntity<BaseResponse<List<JobResponse>>> getAllFinderJobs(
+            @PathVariable Integer finderId,
+            @RequestParam(required = false) String jobTitle,
+            @RequestParam(required = false) Boolean isFullTime,
+            @RequestParam(required = false) Boolean isRemote,
+            @RequestParam(required = false) Integer salary,
+            @RequestParam(required = false) String typeContrat,
+            @RequestParam(required = false) String localisation
+            ){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Opération réussie",
+                        jobService.getJobByFinderWithFilter(finderId, jobTitle, isFullTime, isRemote, salary, typeContrat, localisation)
                 )
         );
     }

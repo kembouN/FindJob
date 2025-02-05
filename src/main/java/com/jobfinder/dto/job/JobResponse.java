@@ -35,7 +35,7 @@ public class JobResponse {
 
     private String recruiter;
 
-    private String recruiterImage;
+    private byte[] recruiterImage;
 
     private TypeContrat typeContrat;
 

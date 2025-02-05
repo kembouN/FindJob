@@ -1,10 +1,11 @@
 package com.jobfinder.services.job.impl;
 
-import com.jobfinder.dto.finder.FinderResponse;
 import com.jobfinder.dto.job.*;
+import com.jobfinder.entities.enterprise.Enterprise;
 import com.jobfinder.entities.finder.Finder;
 import com.jobfinder.entities.job.*;
 import com.jobfinder.exception.OperationNonPermittedException;
+import com.jobfinder.repositories.enterprise.EnterpriseRepository;
 import com.jobfinder.services.job.IJobService;
 import com.jobfinder.repositories.finder.DiplomeRepository;
 import com.jobfinder.repositories.finder.FinderRepository;
@@ -59,6 +60,8 @@ public class JobService implements IJobService {
     @Autowired
     private ILocalisationService localisationService;
 
+    private EnterpriseRepository enterpriseRepository;
+
     @Autowired
     private JobRepository jobRepository;
 
@@ -66,8 +69,9 @@ public class JobService implements IJobService {
     @Transactional
     public Job addJob(JobRequest request) {
         jobValidator.validate(request);
-        Finder finder = finderRepository.findByFinderId(request.getFinderId())
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
+        Finder finder = finderRepository.findByFinderId(request.getUserId()).get();
+
+        Enterprise enterprise = enterpriseRepository.findByEnterpriseId(request.getUserId()).get();
 
         TypeContrat contrat = contratRepository
                 .findById(request.getTypeContratId())
@@ -82,9 +86,11 @@ public class JobService implements IJobService {
                         .salaire(request.getSalary())
                         .domaine(request.getDomaine().trim())
                         .typeContrat(contrat)
+                        .totalCandidat(0)
                         .description(request.getDescription().trim())
                         .delai(request.getDelai())
-                        .publisher(finder)
+                        .finder(finder)
+                        .enterprise(enterprise)
                         .build()
         );
 
@@ -121,48 +127,36 @@ public class JobService implements IJobService {
 
     @Override
     public List<JobResponse> getJobByResearch(String jobTitle, Boolean isFullTime, Boolean isRemote, Integer salary, String domaine, String typeContrat, String publisher, String localisation) {
-        Specification<Job> jobSpecification = Specification
-                .where(JobSpecification.fetchJobMission())
-                .and(JobSpecification.fetchJobExigence())
-                .and(JobSpecification.fetchNiveauRequis())
-                .and(
-                        JobSpecification.jobTitleEquals(jobTitle)
-                                .or(JobSpecification.isFullTime(isFullTime))
-                                .or(JobSpecification.isRemote(isRemote))
-                                .or(JobSpecification.salaryEqual(salary))
-                                .or(JobSpecification.domaineEquals(domaine))
-                                .or(JobSpecification.typeContratEquals(typeContrat))
-                                .or(JobSpecification.jobPublisherEquals(publisher))
-                                .or(JobSpecification.jobLocalisationEquals(localisation))
-                );
+        return getJobResponses(jobTitle, isFullTime, isRemote, salary, typeContrat, publisher, domaine, localisation);
+    }
 
-        List<Job> jobs = jobRepository.findAll(jobSpecification);
-
-        List<JobResponse> result = new ArrayList<>();
-
-        for (Job job : jobs) {
-            result.add(JobResponse.builder()
-                    .jobId(job.getJobId())
-                    .jobTilte(job.getJobTitle())
-                    .isFullTime(job.isFullTime())
-                    .experienceMin(job.getAnneeExpMin())
-                    .isRemote(job.isRemote())
-                    .salary(job.getSalaire())
-                    .domaine(job.getDomaine())
-                    .typeContrat(job.getTypeContrat())
-                    .jobDescription(job.getDescription())
-                            .recruiter(job.getPublisher().getNom())
-                            .totalCandidat(job.getTotalCandidat())
-                    .delai(job.getDelai())
-                            .recruiterImage(job.getPublisher().getPhotoProfil())
-                            .uploadDate(job.getCreatedAt())
-                    .exigences(job.getExigences())
-                    .missions(job.getMissions())
-                    .levels(job.getNiveauRequis())
-                    .localisation(job.getLocalisations())
-                    .build());
+    @Override
+    public List<JobResponse> getJobByFinderWithFilter(Integer finderId,String jobTitle, Boolean isFullTime, Boolean isRemote, Integer salary, String typeContrat, String publisher) {
+        Finder finder = finderRepository.findByFinderId(finderId).orElseThrow(() -> new EntityNotFoundException("Utilisateur introuvable"));
+        List<JobResponse> result;
+        if (!finder.getUser().isEnterprise()){
+            String sector = finder.getSector().trim();
+            String ville = finder.getLocalisation().getVille();
+            result = getJobResponses(jobTitle, isFullTime, isRemote, salary, typeContrat, publisher, sector, ville);
+        }else {
+            Specification<Job> jobSpecification = Specification
+                    .where(JobSpecification.fetchJobMission())
+                    .and(JobSpecification.fetchJobExigence())
+                    .and(JobSpecification.fetchNiveauRequis())
+                    .and(JobSpecification.publiserEquals(finder))
+                    .and(
+                            JobSpecification.jobTitleEquals(jobTitle)
+                                    .or(JobSpecification.isFullTime(isFullTime))
+                                    .or(JobSpecification.isRemote(isRemote))
+                                    .or(JobSpecification.salaryEqual(salary))
+                                    .or(JobSpecification.typeContratEquals(typeContrat))
+                                    .or(JobSpecification.jobPublisherEquals(publisher))
+                    );
+            List<Job> jobs = jobRepository.findAll(jobSpecification);
+            result = getJobResponseArray(jobs);
         }
         return result;
+
     }
 
     @Override
@@ -248,4 +242,55 @@ public class JobService implements IJobService {
         }
         return existJob;
     }
+
+    private List<JobResponse> getJobResponseArray(List<Job> jobs) {
+        List<JobResponse> result = new ArrayList<>();
+        for (Job job : jobs){
+            result.add(JobResponse.builder()
+                    .jobId(job.getJobId())
+                    .jobTilte(job.getJobTitle())
+                    .isFullTime(job.isFullTime())
+                    .experienceMin(job.getAnneeExpMin())
+                    .isRemote(job.isRemote())
+                    .salary(job.getSalaire())
+                    .domaine(job.getDomaine())
+                    .typeContrat(job.getTypeContrat())
+                    .jobDescription(job.getDescription())
+                    .recruiter(job.getFinder().getNom().isEmpty() ? job.getEnterprise().getEnterpriseName() : job.getFinder().getNom())
+                    .totalCandidat(job.getTotalCandidat())
+                    .delai(job.getDelai())
+                    .recruiterImage(job.getFinder().getPhotoProfil().length != 0 ? job.getFinder().getPhotoProfil() : job.getEnterprise().getProfil() )
+                    .uploadDate(job.getCreatedAt())
+                    .exigences(job.getExigences())
+                    .missions(job.getMissions())
+                    .levels(job.getNiveauRequis())
+                    .localisation(job.getLocalisations())
+                    .build());
+        }
+        return result;
+    }
+
+    private List<JobResponse> getJobResponses(String jobTitle, Boolean isFullTime, Boolean isRemote, Integer salary, String typeContrat, String publisher, String sector, String ville) {
+        Specification<Job> jobSpecification = Specification
+                .where(JobSpecification.fetchJobMission())
+                .and(JobSpecification.fetchJobExigence())
+                .and(JobSpecification.fetchNiveauRequis())
+                .and(
+                        JobSpecification.jobTitleEquals(jobTitle)
+                                .or(JobSpecification.isFullTime(isFullTime))
+                                .or(JobSpecification.isRemote(isRemote))
+                                .or(JobSpecification.salaryEqual(salary))
+                                .or(JobSpecification.domaineEquals(sector))
+                                .or(JobSpecification.typeContratEquals(typeContrat))
+                                .or(JobSpecification.jobPublisherEquals(publisher))
+                                .or(JobSpecification.jobLocalisationEquals(ville))
+                );
+        List<Job> jobs = jobRepository.findAll(jobSpecification);
+
+        List<JobResponse> result = new ArrayList<>();
+
+        getJobResponseArray(jobs);
+        return result;
+    }
+
 }

@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -51,6 +52,30 @@ public class FinderController {
                         HttpStatus.OK.value(),
                         "Informations mises à jour",
                         finderService.updateFinder(finderId, request)
+                )
+        );
+    }
+
+    @PutMapping("/{finderId}/add-picture")
+    @Operation(description = "Ajouter une photo de profile utilisateur")
+    public ResponseEntity<BaseResponse<Void>> addPicture(@PathVariable Integer finderId, @RequestBody MultipartFile photo){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Photo ajoutée",
+                        finderService.addProfilePicture(finderId, photo)
+                )
+        );
+    }
+
+    @GetMapping("/{fniderId}/get-picture")
+    @Operation(description = "Obtenir la photo de profil de l'utilisateur")
+    public ResponseEntity<BaseResponse<byte[]>> getFinderPic(@PathVariable Integer finderId){
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Photo de profile obtenue",
+                        finderService.getFinderPicture(finderId)
                 )
         );
     }

@@ -33,5 +33,5 @@ public class FinderResponse {
 
     private Integer numTel;
 
-    private String photoProfil;
+    private byte[] photoProfil;
 }

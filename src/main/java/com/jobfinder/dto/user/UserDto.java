@@ -14,9 +14,9 @@ import java.time.LocalDate;
 @Builder
 public class UserDto {
 
-    private Integer userId;
+    private Integer accountId;
 
-    private Integer finderId;
+    private Integer userId;
 
     private String username;
 
@@ -25,6 +25,8 @@ public class UserDto {
     private boolean isActive;
 
     private boolean isEnterprise;
+
+    private boolean isAdmin;
 
     private String codeUtilisateur;
 
@@ -39,5 +41,7 @@ public class UserDto {
     private SexEnum sexe;
 
     private Integer telephone;
+
+    private byte[] profilePic;
 
 }

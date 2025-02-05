@@ -17,7 +17,7 @@ import java.util.List;
 public class JobRequest {
 
     @NotNull(message = "Utilisateur non renseigné")
-    private Integer finderId;
+    private Integer userId;
 
     @NotEmpty(message = "Veuillez renseigner le thème du poste")
     private String jobTitle;
